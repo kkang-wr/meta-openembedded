@@ -1,0 +1,49 @@
+From b3844992ffe7b7b0414801d2ed091448f1650250 Mon Sep 17 00:00:00 2001
+From: Kai Kang <kai.kang@windriver.com>
+Date: Tue, 9 Feb 2021 14:50:45 +0800
+Subject: [PATCH 1/2] Revert "Merge commit
+ '5fc3ad2414c5968e8fca95543ddc2214131e37ce'"
+
+This reverts commit a9312190ebceea9a42cdc89a264c241c5232c06a, reversing
+changes made to c1b529c61912a74188d7df2592c97d90556b3447.
+
+Commit 5fc3ad2 skips input password when it is empty. But it overwrites
+the config option 'skip_password', so revert it.
+
+But keep the change that not clear the text of label 'promt' when
+skip_password is set. When user is checked whether need to update
+password, it will only show input box without label for about 1 second.
+
+Signed-off-by: Kai Kang <kai.kang@windriver.com>
+---
+ src/greeter.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/src/greeter.c b/src/greeter.c
+index 1eef8c5..2208711 100644
+--- a/src/greeter.c
++++ b/src/greeter.c
+@@ -37,8 +37,6 @@
+ #include <stdlib.h>
+ #include <sys/stat.h>
+ #include <sys/wait.h>
+-#include <string.h>
+-#include <shadow.h>
+ 
+ #include "lxcom.h"
+ #include "greeter-utils.h"
+@@ -225,10 +223,7 @@ static void on_entry_activate(GtkEntry* entry)
+ 			user = NULL;
+ 			return;
+ 		}
+-		struct spwd *sp = getspnam(user);
+-
+-		if ((g_key_file_get_integer(config,"base","skip_password",NULL)!=0) ||
+-		    (sp && strlen(sp->sp_pwdp) == 0))
++		if(g_key_file_get_integer(config,"base","skip_password",NULL)!=0)
+ 		{
+ 			try_login_user(user);
+ 		}
+-- 
+2.25.1
+
